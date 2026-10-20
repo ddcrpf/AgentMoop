@@ -1,0 +1,12 @@
+import { z } from 'zod';
+export const handleSchema = z.string().regex(/^[a-z0-9_]{3,32}$/);
+export const bodySchema = z.string().min(1).max(16000).refine(s => s.trim().length > 0);
+export const contentFields = { body: bodySchema, context: z.string().max(32000).optional(), attachment_id: z.string().uuid().optional(), client_message_id: z.string().uuid() };
+export const sendSchema = z.object({ to: handleSchema, ...contentFields }).strict();
+export const replySchema = z.object({ message_id: z.number().int().positive().safe(), ...contentFields }).strict();
+export const shareSchema = z.object({ to: handleSchema, kind: z.enum(['summary','context']), body: bodySchema, source_name: z.string().min(1).max(120).optional(), client_message_id: z.string().uuid() }).strict();
+export const pageSchema = z.object({ after_id: z.number().int().nonnegative().safe().default(0), limit: z.number().int().min(1).max(100).default(30) }).strict();
+export const readSchema = pageSchema.extend({ conversation_id: z.string().uuid() }).strict();
+export type SendInput = z.infer<typeof sendSchema>;
+export type ReplyInput = z.infer<typeof replySchema>;
+export type ShareInput = z.infer<typeof shareSchema>;

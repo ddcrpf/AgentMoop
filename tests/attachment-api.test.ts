@@ -1,0 +1,37 @@
+import { afterEach, beforeEach, expect, it } from 'vitest';
+import { createHash, randomUUID } from 'node:crypto';
+import { fixture } from './fixtures/http.js';
+import { createUser, befriend, bearer } from './fixtures/users.js';
+import { startUpload, appendChunk, finishUpload } from '../src/attachments/store.js';
+import { sendMessage } from '../src/messages/service.js';
+let f:Awaited<ReturnType<typeof fixture>>;
+beforeEach(async()=>{f=await fixture();});afterEach(async()=>{await f.close();});
+const PNG=Buffer.concat([Buffer.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]),Buffer.alloc(32,9)]);
+it('serves an attachment only to the two friends, and the sender can delete it',async()=>{
+  const a=createUser(f.db,'alice'),b=createUser(f.db,'bob');createUser(f.db,'eve');befriend(f.db,a,b);
+  const {upload_id}=startUpload(f.db,f.attachmentsDir,a,{filename:'shot.png',media_type:'image/png',size:PNG.length,sha256:createHash('sha256').update(PNG).digest('hex')});
+  appendChunk(f.db,f.attachmentsDir,a,{upload_id,offset:0,data:PNG.toString('base64')});finishUpload(f.db,f.attachmentsDir,a,upload_id);
+  sendMessage(f.db,{userId:a,connectionId:'t',scopes:['messages']},{to:'bob',body:'look',attachment_id:upload_id,client_message_id:randomUUID()});
+  const got=await fetch(f.url+'/api/attachments/'+upload_id,{headers:bearer('bob')});
+  expect(got.status).toBe(200);expect(got.headers.get('content-type')).toBe('image/png');
+  expect(got.headers.get('x-content-type-options')).toBe('nosniff');expect(got.headers.get('cache-control')).toBe('no-store');
+  expect(Buffer.from(await got.arrayBuffer()).equals(PNG)).toBe(true);
+  expect((await fetch(f.url+'/api/attachments/'+upload_id,{headers:bearer('eve')})).status).toBe(404);
+  expect((await fetch(f.url+'/api/attachments/'+upload_id+'/delete',{method:'POST',headers:bearer('bob')})).status).toBe(404);
+  expect((await fetch(f.url+'/api/attachments/'+upload_id+'/delete',{method:'POST',headers:bearer('alice')})).status).toBe(200);
+  expect((await fetch(f.url+'/api/attachments/'+upload_id,{headers:bearer('bob')})).status).toBe(404);
+  expect((await fetch(f.url+'/healthz')).headers.get('content-security-policy')).toContain('blob:');
+});
+it('serves non-ASCII text names with an encoded disposition and 404s malformed ids',async()=>{
+  const a=createUser(f.db,'alice'),b=createUser(f.db,'bob');befriend(f.db,a,b);
+  const TXT=Buffer.from('bonjour');
+  const {upload_id}=startUpload(f.db,f.attachmentsDir,a,{filename:'résumé.txt',media_type:'text/plain',size:TXT.length,sha256:createHash('sha256').update(TXT).digest('hex')});
+  appendChunk(f.db,f.attachmentsDir,a,{upload_id,offset:0,data:TXT.toString('base64')});finishUpload(f.db,f.attachmentsDir,a,upload_id);
+  sendMessage(f.db,{userId:a,connectionId:'t',scopes:['messages']},{to:'bob',body:'cv',attachment_id:upload_id,client_message_id:randomUUID()});
+  const got=await fetch(f.url+'/api/attachments/'+upload_id,{headers:bearer('bob')});
+  expect(got.status).toBe(200);expect(got.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+  expect(got.headers.get('content-disposition')).toContain("filename*=UTF-8''r%C3%A9sum%C3%A9.txt");
+  expect(got.headers.get('content-disposition')).toMatch(/filename="[\x20-\x7e]*"/);
+  expect((await fetch(f.url+'/api/attachments/not-a-uuid',{headers:bearer('bob')})).status).toBe(404);
+  expect((await fetch(f.url+'/api/attachments/not-a-uuid/delete',{method:'POST',headers:bearer('bob')})).status).toBe(404);
+});

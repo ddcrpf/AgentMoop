@@ -1,0 +1,14 @@
+# Reverse proxy example for self-hosters. Replace example.com with your origin.
+example.com {
+	@landing path /
+	handle @landing {
+		rewrite * /landing.html
+		reverse_proxy 127.0.0.1:3434
+	}
+	handle {
+		# Server-sent events must not be compressed.
+		@compress not path /api/events
+		encode @compress gzip
+		reverse_proxy 127.0.0.1:3434
+	}
+}

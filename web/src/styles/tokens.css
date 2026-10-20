@@ -1,0 +1,25 @@
+/* Palette. Keep in sync with web/src/theme.ts (Clerk and the hero glyphs need raw hex values). */
+:root{
+  color-scheme:light;
+  --paper:#F7F7F5;--surface:#FFFFFF;--surface-2:#EFEFEC;--ink:#16181D;--muted:#5E6470;--line:#E4E5E1;--line-strong:#C6C8C2;
+  --accent:#0F766E;--accent-hover:#115E59;--accent-soft:#E6F2F0;--on-accent:#FFFFFF;--danger:#B42318;--danger-soft:#FDECEA;
+  --term-bg:#121417;--term-text:#E6E8EB;--term-accent:#5EC4B6;--term-muted:#7C838C;--term-line:#2A2E33;
+  --font-display:'Bricolage Grotesque Variable','Figtree Variable',system-ui,sans-serif;
+  --font-body:'Figtree Variable',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --font-mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  --text-xs:.75rem;--text-sm:.875rem;--text-md:.9375rem;--text-lg:1.125rem;--text-xl:1.5rem;--text-callsign:clamp(2.25rem,1.4rem + 3.6vw,3.75rem);
+  --radius-sm:6px;--radius-lg:12px;
+  --topbar:56px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --paper:#111315;--surface:#181B1E;--surface-2:#202428;--ink:#ECEDEE;--muted:#9AA0A8;--line:#2A2E33;--line-strong:#3D4249;
+    --accent:#5EC4B6;--accent-hover:#7DD3C7;--accent-soft:#16302D;--on-accent:#0B1F1C;--danger:#FF8A80;--danger-soft:#3A1C1F;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --paper:#111315;--surface:#181B1E;--surface-2:#202428;--ink:#ECEDEE;--muted:#9AA0A8;--line:#2A2E33;--line-strong:#3D4249;
+  --accent:#5EC4B6;--accent-hover:#7DD3C7;--accent-soft:#16302D;--on-accent:#0B1F1C;--danger:#FF8A80;--danger-soft:#3A1C1F;
+}

@@ -1,0 +1,45 @@
+import { beforeEach,afterEach,it,expect } from 'vitest';
+import { randomUUID } from 'node:crypto';
+import { fixture } from './fixtures/http.js';
+import { createUser,befriend,bearer } from './fixtures/users.js';
+import { issueToken,revokeConnection } from '../src/auth/tokens.js';
+import { sendMessage } from '../src/messages/service.js';
+let f:Awaited<ReturnType<typeof fixture>>;
+beforeEach(async()=>{f=await fixture();});afterEach(async()=>{await f.close();});
+it('delivers notices without message content, checks ownership, and honors revocation while waiting',async()=>{
+  const a=createUser(f.db,'alice'),b=createUser(f.db,'bob');befriend(f.db,a,b);
+  const bt=issueToken(f.db,b,'delivery','Bob laptop'),at=issueToken(f.db,a,'delivery','Alice laptop');
+  const headers={Authorization:'Bearer '+bt.token};
+  const m=sendMessage(f.db,{userId:a,connectionId:'test',scopes:['messages']},{to:'bob',body:'private body',client_message_id:randomUUID()});
+  const notices=await (await fetch(f.url+'/api/deliveries?wait=0',{headers})).json();
+  expect(notices.items).toEqual([{messageId:m.id,conversationId:m.conversationId,senderHandle:'alice'}]);
+  const ack=(token:string)=>fetch(f.url+`/api/deliveries/${m.id}/ack`,{method:'POST',headers:{Authorization:'Bearer '+token,'Content-Type':'application/json'},body:JSON.stringify({status:'submitted'})});
+  expect((await ack(at.token)).status).toBe(404);expect((await ack(bt.token)).status).toBe(200);
+  expect((await (await fetch(f.url+'/api/deliveries?wait=0',{headers})).json()).items).toEqual([]);
+  const waiting=fetch(f.url+'/api/deliveries?wait=2',{headers});
+  await new Promise(r=>setTimeout(r,50));revokeConnection(f.db,b,bt.connectionId);
+  expect((await waiting).status).toBe(401);
+});
+it('stops deliveries for a disconnected friend and needs acceptance to resume',async()=>{
+  const a=createUser(f.db,'alice'),b=createUser(f.db,'bob');befriend(f.db,a,b);
+  const bt=issueToken(f.db,b,'delivery','Bob laptop');
+  sendMessage(f.db,{userId:a,connectionId:'t',scopes:['messages']},{to:'bob',body:'hi',client_message_id:randomUUID()});
+  await fetch(f.url+`/api/contacts/${b}/disconnect`,{method:'POST',headers:bearer('alice')});
+  expect((await (await fetch(f.url+'/api/deliveries?wait=0',{headers:{Authorization:'Bearer '+bt.token}})).json()).items).toEqual([]);
+  await fetch(f.url+'/api/requests',{method:'POST',headers:{...bearer('alice'),'Content-Type':'application/json'},body:JSON.stringify({tag:'bob'})});
+  expect((await (await fetch(f.url+'/api/deliveries?wait=0',{headers:{Authorization:'Bearer '+bt.token}})).json()).items).toEqual([]);
+});
+it('lets new notices through when an older full batch repeatedly fails',async()=>{
+  for(const id of ['alice','bob']) f.db.prepare('INSERT INTO users(id,handle,password_hash) VALUES(?,?,?)').run(id,id,'fixture');
+  f.db.prepare("INSERT INTO contacts(a,b,state) VALUES('alice','bob','accepted')").run();
+  const headers={Authorization:'Bearer '+issueToken(f.db,'bob','delivery','Bob laptop').token,'Content-Type':'application/json'};
+  const principal={userId:'alice',connectionId:'test',scopes:['messages']};
+  for(let i=0;i<30;i++)sendMessage(f.db,principal,{to:'bob',body:'unavailable destination',client_message_id:randomUUID()});
+  const poll=async()=> (await (await fetch(f.url+'/api/deliveries?wait=0',{headers})).json()).items as {messageId:number}[];
+  const first=await poll();expect(first).toHaveLength(30);
+  for(const notice of first)expect((await fetch(f.url+`/api/deliveries/${notice.messageId}/ack`,{method:'POST',headers,body:JSON.stringify({status:'failed'})})).status).toBe(200);
+  f.db.prepare('DELETE FROM rate_limits').run();
+  const fresh=sendMessage(f.db,principal,{to:'bob',body:'working destination',client_message_id:randomUUID()});
+  const next=await poll();expect(next[0].messageId).toBe(fresh.id);
+  expect(next.slice(1).length).toBe(29);
+});

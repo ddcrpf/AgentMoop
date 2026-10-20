@@ -1,0 +1,57 @@
+{
+  "name": "agentmoop",
+  "version": "0.1.0",
+  "private": true,
+  "license": "AGPL-3.0-only",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ddcrpf/AgentMoop.git"
+  },
+  "homepage": "https://agentmoop.com",
+  "bugs": "https://github.com/ddcrpf/AgentMoop/issues",
+  "type": "module",
+  "engines": {
+    "node": ">=22.17.0 <23"
+  },
+  "scripts": {
+    "dev": "node --env-file-if-exists=.env --env-file-if-exists=clerk_env.env --import tsx src/http/server.ts",
+    "build": "tsc -p tsconfig.build.json && vite build web",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "start": "node --env-file-if-exists=.env --env-file-if-exists=clerk_env.env dist/http/server.js",
+    "admin": "node --env-file-if-exists=.env --env-file-if-exists=clerk_env.env --import tsx src/cli/admin.ts",
+    "receiver": "node --env-file-if-exists=.env --env-file-if-exists=clerk_env.env --import tsx src/cli/receiver.ts",
+    "channel": "node --env-file-if-exists=.env --env-file-if-exists=clerk_env.env --import tsx src/local/claude-channel.ts",
+    "test:browser": "node --env-file=clerk_env.env node_modules/.bin/playwright test",
+    "build:web": "vite build web",
+    "dev:web": "vite web",
+    "build:plugin": "scripts/build-plugin.sh ${PUBLIC_BASE_URL:-http://127.0.0.1:3434}"
+  },
+  "dependencies": {
+    "@clerk/backend": "^3.25.0",
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "express": "^5.1.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@chatscope/chat-ui-kit-react": "^2.1.1",
+    "@chatscope/chat-ui-kit-styles": "^1.4.0",
+    "@clerk/react": "^6.17.8",
+    "@clerk/testing": "^2.2.47",
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@playwright/test": "^1.56.0",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.0.0",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^5.2.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-router": "^7.18.4",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "vite": "^7.3.7",
+    "vitest": "^3.2.0"
+  }
+}

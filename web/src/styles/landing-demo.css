@@ -1,0 +1,74 @@
+/* The interactive demo: a simplified VS Code window running Claude Code, plus Maya's terminal. Dark panels inside the page. */
+.demo{display:grid;grid-template-columns:minmax(0,1fr) 272px;gap:16px;max-width:960px;color:var(--term-text);font:12.5px/1.55 var(--font-mono)}
+.demo-window,.demo-maya{display:grid;grid-template-rows:32px minmax(0,1fr);height:460px;min-width:0;overflow:hidden;border:1px solid var(--term-line);border-radius:10px;background:var(--term-bg);box-shadow:0 1px 2px rgba(22,24,29,.06),0 18px 40px -20px rgba(22,24,29,.35)}
+.demo p{margin:0}
+.demo button{padding:0 4px;border:0;border-radius:3px;background:none;color:inherit;font:inherit;transition:none}
+.demo button:hover{background:#262B30}
+.demo button:disabled{opacity:.45;cursor:default;background:none}
+.demo :focus-visible{outline:2px solid var(--term-accent);outline-offset:1px}
+
+.demo-titlebar{position:relative;display:flex;align-items:center;padding:0 12px;background:#1A1D21;border-bottom:1px solid var(--term-line);color:var(--term-muted);font:500 12px/1 var(--font-body)}
+.demo-title{position:absolute;left:50%;transform:translateX(-50%);white-space:nowrap}
+.demo-dots{display:flex;gap:6px}
+.demo-dots i{width:10px;height:10px;border-radius:50%;background:#3A3F45}
+
+.demo-body{display:grid;grid-template-columns:44px 150px minmax(0,1fr);min-height:0}
+.demo-activity{display:flex;flex-direction:column;align-items:center;gap:18px;padding-top:12px;background:#0E1013;border-right:1px solid var(--term-line)}
+.demo-activity svg{width:20px;height:20px;fill:none;stroke:#5A6068;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.demo-activity svg.is-active{stroke:var(--term-text)}
+.demo-explorer{padding-top:10px;background:#16191C;border-right:1px solid var(--term-line);color:var(--term-muted);font-size:12px}
+.demo-explorer-title{padding:0 14px 8px;font:600 11px/1 var(--font-body)}
+.demo-explorer ul{margin:0;padding:0;list-style:none}
+.demo-explorer li{padding:2px 14px;white-space:nowrap}
+.demo-explorer .demo-nested{padding-left:28px}
+.demo-explorer .is-active{background:#22272C;color:var(--term-text)}
+
+.demo-main{display:grid;grid-template-rows:auto minmax(0,1fr);min-width:0;min-height:0}
+.demo-editor-tabs{display:flex;height:30px;background:#16191C}
+.demo-editor-tabs span{display:flex;align-items:center;padding:0 14px;color:var(--term-muted);font-size:12px}
+.demo-editor-tabs .is-active{background:var(--term-bg);color:var(--term-text);box-shadow:inset 0 1px 0 var(--term-muted)}
+.demo-code{margin:0;padding:8px 0;overflow:hidden;color:#C9CDD2;font:12px/17px var(--font-mono);white-space:pre}
+.demo-gutter{display:inline-block;width:40px;padding-right:16px;color:#4A5058;text-align:right}
+.tok-kw{color:#B79CC9}.tok-fn{color:#9DBEDC}.tok-str{color:#CDB98C}.tok-ty{color:#A9C3A0}.tok-cm{color:#6B727B;font-style:italic}
+
+.demo-panel{display:grid;grid-template-rows:28px minmax(0,1fr);min-height:0;border-top:1px solid var(--term-line)}
+.demo-panel-tabs{display:flex;align-items:center;gap:18px;padding:0 14px;color:var(--term-muted);font:500 11px/1 var(--font-body)}
+.demo-panel-tabs .is-active{padding:6px 0;color:var(--term-text);box-shadow:inset 0 -1px 0 var(--term-text)}
+.demo .demo-reset{margin-left:auto;padding:4px 6px;color:var(--term-muted);font:500 11px/1 var(--font-body)}
+.demo .demo-reset:hover{color:var(--term-text)}
+
+.demo-term{display:flex;flex-direction:column;gap:6px;min-height:0;padding:10px 14px 12px;overflow:hidden;cursor:text}
+.demo-welcome{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 12px;align-self:flex-start;max-width:100%;padding:5px 10px;border:1px solid #3A3F45;border-radius:6px}
+.demo-welcome strong{font-weight:600}
+.demo-dim{color:var(--term-muted)}
+.demo-output{display:flex;flex:1;flex-direction:column;justify-content:flex-end;gap:5px;min-height:0;overflow:hidden}
+.demo-echo{color:var(--term-text)}
+.demo-echo span{color:var(--term-muted)}
+.demo-claude{position:relative;padding-left:14px}
+.demo-claude::before{content:"";position:absolute;left:1px;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--term-text)}
+.demo-card{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 12px;padding:5px 10px;border-left:2px solid var(--term-accent);border-radius:0 4px 4px 0;background:#191C20}
+.demo-card p{flex:1 1 200px;min-width:0}
+.demo-sender{color:var(--term-accent);font-weight:700}
+.demo-actions{display:flex;gap:2px;white-space:nowrap}
+.demo-line{display:flex;align-items:center;gap:10px;margin-top:4px;white-space:nowrap}
+.demo-brand{color:var(--term-accent);font-weight:700}
+.demo-prompt{display:flex;align-items:center;gap:8px;padding-top:8px;border-top:1px solid var(--term-line)}
+.demo-prompt:focus-within{border-top-color:var(--term-accent)}
+.demo-caret{color:var(--term-accent);font-weight:700}
+.demo .demo-prompt input{flex:1;padding:2px 0;border:0;border-radius:0;outline:0;background:transparent;color:var(--term-text);font:inherit}
+.demo .demo-prompt input::placeholder{color:var(--term-muted)}
+
+.demo-maya .demo-term{cursor:default}
+
+@media (max-width:880px){
+  .demo{grid-template-columns:minmax(0,1fr)}
+  .demo-maya{height:240px}
+}
+@media (max-width:640px){
+  .demo-body{grid-template-columns:minmax(0,1fr)}
+  .demo-activity,.demo-explorer{display:none}
+  .demo-window{height:470px}
+  .demo-code{font-size:11px;line-height:16px}
+  .demo-gutter{width:30px;padding-right:12px}
+  .demo .demo-prompt input{font-size:16px}
+}

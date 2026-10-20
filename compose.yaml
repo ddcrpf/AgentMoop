@@ -1,0 +1,23 @@
+services:
+  pingme:
+    build:
+      context: .
+      args:
+        PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?Set PUBLIC_BASE_URL to your HTTPS origin}
+    restart: unless-stopped
+    environment:
+      PUBLIC_BASE_URL: ${PUBLIC_BASE_URL:?Set PUBLIC_BASE_URL to your HTTPS origin}
+      CLERK_SECRET_KEY: ${CLERK_SECRET_KEY:?}
+      CLERK_PUBLISHABLE_KEY: ${CLERK_PUBLISHABLE_KEY:?}
+      HOST: 0.0.0.0
+      PORT: 3434
+      DATA_DIR: /app/data
+      TRUST_PROXY_HOPS: ${TRUST_PROXY_HOPS:-1}
+      ALLOW_HTTP_LOOPBACK: "false"
+    ports:
+      - "127.0.0.1:3434:3434"
+    volumes:
+      - pingme-data-v1:/app/data
+    stop_grace_period: 10s
+volumes:
+  pingme-data-v1:
