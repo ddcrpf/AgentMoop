@@ -113,10 +113,6 @@ The browser test (`tests/e2e`) signs two Clerk development test users in with Cl
 
 See [operations](docs/operations.md) for hosting, persistence, backup, recovery and access revocation.
 
-## Moving from Pingme
-
-AgentMoop was formerly called Pingme. Existing users must remove the old connector and plugin and add the new ones: re-add the connector with https://agentmoop.com/mcp (for Claude Code, run `claude mcp remove pingme -s user`, remove the old pingme plugin, then install the agentmoop plugin: `claude plugin marketplace add https://agentmoop.com/claude-plugin/marketplace.json` and `claude plugin install agentmoop@agentmoop`). The slash commands are now `/moop` and `/moop-games`. Accounts, friends and history are kept.
-
 ## License
 
 AgentMoop is AGPL-3.0-only (see [LICENSE](LICENSE)). The Claude Code plugin in `plugin/` is MIT (see [plugin/LICENSE](plugin/LICENSE)). Third-party code keeps its own licence; the background in `web/src/vendor/gradient-ascii` is from React Bits under the licence in that folder. AgentMoop name and logo: see [TRADEMARKS.md](TRADEMARKS.md).
